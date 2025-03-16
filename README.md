@@ -30,3 +30,12 @@ Copy SDL2.dll, SDL2_ttf.dll, SDL2_image.dll vào thư mục chứa file .exe.
 
 # Các tệp DLL nằm trong thư mục:
 C:\msys64\mingw64\bin
+
+# Đối với Macos
+Cài đặt SDL2 và các thư viện 
+brew install sdl2 sdl2_image sdl2_ttf sdl2_mixer
+# Biên dịch game
+g++ -o snake_game snake_game.cpp -std=c++17 -I/opt/homebrew/include/SDL2 -D_THREAD_SAFE -L/opt/homebrew/lib -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
+# Run 
+./snake_game
+

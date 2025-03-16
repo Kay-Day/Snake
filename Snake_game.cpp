@@ -6,14 +6,16 @@
 #include <cstdlib>
 #include <ctime>
 #include <string>
-
+// Khởi tạo 
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
 const int GRID_SIZE = 40;
 
+// Hướng di chuyển của rắn của 2 chế độ 
 enum Direction { UP, DOWN, LEFT, RIGHT };
 enum GameMode { CLASSIC, HEALTH_MODE };
 
+// Dùng để quản lý rắn và thức ăn trong game.
 struct Snake {
     std::vector<SDL_Point> body;
     Direction dir;
@@ -24,18 +26,20 @@ struct Food {
     SDL_Point position;
 };
 
+// Khởi tạo trạng thái ban đầu của rắn khi game bắt đầu hoặc khi chơi lại.
 void initSnake(Snake &snake) {
     snake.body.clear();
     snake.body.push_back({SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2});
     snake.dir = RIGHT;
     snake.health = 100;
 }
-
+// Đặt thức ăn vào một vị trí ngẫu nhiên trên màn hình.
 void placeFood(Food &food) {
     food.position.x = (rand() % (SCREEN_WIDTH / GRID_SIZE)) * GRID_SIZE;
     food.position.y = (rand() % (SCREEN_HEIGHT / GRID_SIZE)) * GRID_SIZE;
 }
 
+// Cập nhật vị trí của rắn sau mỗi lần di chuyển.
 void moveSnake(Snake &snake, bool &isAlive, GameMode mode) {
     SDL_Point newHead = snake.body[0];
     switch (snake.dir) {
@@ -44,6 +48,7 @@ void moveSnake(Snake &snake, bool &isAlive, GameMode mode) {
         case LEFT:  newHead.x -= GRID_SIZE; break;
         case RIGHT: newHead.x += GRID_SIZE; break;
     }
+    // Kiểm tra va chạm và thân => Over
 
     if (newHead.x < 0 || newHead.x >= SCREEN_WIDTH || newHead.y < 0 || newHead.y >= SCREEN_HEIGHT) {
         isAlive = false;
@@ -58,12 +63,15 @@ void moveSnake(Snake &snake, bool &isAlive, GameMode mode) {
     }
 
     snake.body.insert(snake.body.begin(), newHead);
+    // Nếu đang chơi chế độ Health Mode, giảm máu
     if (mode == HEALTH_MODE) snake.health -= 1;
 }
 
+// Check rắn có ăn không 
 bool checkCollision(const Snake &snake, const Food &food) {
     return (snake.body[0].x == food.position.x && snake.body[0].y == food.position.y);
 }
+ // hiển thị text lên màn hình bằng SDL2 và SDL_ttf.
 
 void renderText(SDL_Renderer *renderer, TTF_Font *font, const std::string &text, int x, int y) {
     SDL_Color white = {255, 255, 255, 255};
@@ -98,6 +106,8 @@ void renderText(SDL_Renderer *renderer, TTF_Font *font, const std::string &text,
 //         }
 //     }
 // }
+
+// Chọn chế độ , button trò chơi 
 GameMode showMenu(SDL_Renderer *renderer, TTF_Font *font) {
     SDL_Event event;
     while (true) {
@@ -137,7 +147,7 @@ GameMode showMenu(SDL_Renderer *renderer, TTF_Font *font) {
 }
 
 
-
+// Hiển thị màn hình Game Over và chờ người chơi nhập lệnh để chơi lại hoặc thoát.
 bool showGameOver(SDL_Renderer *renderer, TTF_Font *font) {
     SDL_Event event;
     while (true) {
@@ -157,18 +167,22 @@ bool showGameOver(SDL_Renderer *renderer, TTF_Font *font) {
         }
     }
 }
-
+// Khởi tạo game random vị trí , SDL2 âm thanh , đồ hoạ game
 int main() {
     srand(time(0));
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) return 1;
     if (TTF_Init() == -1) return 1;
     if (IMG_Init(IMG_INIT_PNG) == 0) return 1;
     if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) return 1;
-
+    // Tạo màn hình game 
     SDL_Window *window = SDL_CreateWindow("Snake Game", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+    // Render đồ hoạ game phù hợp 
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    // Dùng Macos
     TTF_Font *font = TTF_OpenFont("/System/Library/Fonts/Supplemental/Arial.ttf", 24);
-
+    // Dùng Win
+    // TTF_Font *font = TTF_OpenFont("C:\\Windows\\Fonts\\arial.ttf", 24);
+     
     SDL_Texture *headTexture = IMG_LoadTexture(renderer, "upmouth.png");
     SDL_Texture *bodyTexture = IMG_LoadTexture(renderer, "bodydi.png");
     SDL_Texture *foodTexture = IMG_LoadTexture(renderer, "apple.png");
@@ -176,7 +190,7 @@ int main() {
 
     Mix_Chunk *eatSound = Mix_LoadWAV("Untitled 1.wav");
     Mix_Chunk *loseSound = Mix_LoadWAV("Untitled 2.wav");
-
+    // Vòng lặp , khởi tạo trò chơi 
     while (true) {
         GameMode mode = showMenu(renderer, font);
         Snake snake;
@@ -184,9 +198,10 @@ int main() {
         initSnake(snake);
         placeFood(food);
         bool isAlive = true;
-        
+        // Vòng lặp chính 
         while (isAlive) {
             SDL_Event event;
+            // Sử lý event khi user nhập lệnh bàn phím
             while (SDL_PollEvent(&event)) {
                 if (event.type == SDL_QUIT) return 0;
                 if (event.type == SDL_KEYDOWN) {
@@ -200,6 +215,7 @@ int main() {
             }
 
             moveSnake(snake, isAlive, mode);
+            // Kiểm tra va chạm thức ăn 
             if (checkCollision(snake, food)) {
                 snake.health += 10;
                 placeFood(food);
@@ -207,24 +223,26 @@ int main() {
             } else {
                 snake.body.pop_back();
             }
-
+            // Hiển thị lên màn hình 
             SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL);
+            // vẽ nền 
             SDL_Rect foodRect = {food.position.x, food.position.y, GRID_SIZE, GRID_SIZE};
             SDL_RenderCopy(renderer, foodTexture, NULL, &foodRect);
-
+            // Vẽ thức ăn 
             for (size_t i = 0; i < snake.body.size(); i++) {
                 SDL_Rect rect = {snake.body[i].x, snake.body[i].y, GRID_SIZE, GRID_SIZE};
                 SDL_RenderCopy(renderer, (i == 0) ? headTexture : bodyTexture, NULL, &rect);
             }
-
+            // Vẽ rắn 
             renderText(renderer, font, "Score: " + std::to_string(snake.body.size()), 10, 10);
             if (mode == HEALTH_MODE) renderText(renderer, font, "Health: " + std::to_string(snake.health), 10, 40);
+            // Kiểm tra rắn hết máu 
             if (snake.health <= 0) isAlive = false;
-
+            // Cập nhật màn hình 
             SDL_RenderPresent(renderer);
             SDL_Delay(200);
         }
-
+        // Xử lý âm thanh khi rắn chết 
         Mix_PlayChannel(-1, loseSound, 0);
         SDL_Delay(1000);
         if (!showGameOver(renderer, font)) break;
