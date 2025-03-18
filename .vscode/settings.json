@@ -2,5 +2,6 @@
     "files.associations": {
         "*.embeddedhtml": "html",
         "iostream": "cpp"
-    }
+    },
+    "cmake.sourceDirectory": "C:/Users/DELL/OneDrive/Desktop/Game/Snake/vcpkg/ports/7zip"
 }

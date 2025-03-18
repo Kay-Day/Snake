@@ -6,6 +6,8 @@
 #include <cstdlib>
 #include <ctime>
 #include <string>
+#include <SDL_main.h>
+
 // Khởi tạo 
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
@@ -168,7 +170,7 @@ bool showGameOver(SDL_Renderer *renderer, TTF_Font *font) {
     }
 }
 // Khởi tạo game random vị trí , SDL2 âm thanh , đồ hoạ game
-int main() {
+int main(int argc, char* argv[]) {
     srand(time(0));
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) return 1;
     if (TTF_Init() == -1) return 1;
@@ -179,9 +181,10 @@ int main() {
     // Render đồ hoạ game phù hợp 
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     // Dùng Macos
-    TTF_Font *font = TTF_OpenFont("/System/Library/Fonts/Supplemental/Arial.ttf", 24);
+    // TTF_Font *font = TTF_OpenFont("/System/Library/Fonts/Supplemental/Arial.ttf", 24);
     // Dùng Win
-    // TTF_Font *font = TTF_OpenFont("C:\\Windows\\Fonts\\arial.ttf", 24);
+    TTF_Font *font = TTF_OpenFont("C:\\Windows\\Fonts\\arial.ttf", 24);
+    
      
     SDL_Texture *headTexture = IMG_LoadTexture(renderer, "upmouth.png");
     SDL_Texture *bodyTexture = IMG_LoadTexture(renderer, "bodydi.png");
